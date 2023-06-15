@@ -1,3 +1,4 @@
 *.log
 commands.log
 *.zip
+.vscode

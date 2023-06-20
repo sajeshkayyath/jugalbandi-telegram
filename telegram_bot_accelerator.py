@@ -81,9 +81,9 @@ async def language_handler(update: Update):
     english_button = InlineKeyboardButton('English', callback_data='lang_English')
     hindi_button = InlineKeyboardButton('Hindi', callback_data='lang_Hindi')
     kannada_button = InlineKeyboardButton('Kannada', callback_data='lang_Kannada')
-    telugu_button = InlineKeyboardButton('Telugu', callback_data='lang_Telugu')
+    # telugu_button = InlineKeyboardButton('Telugu', callback_data='lang_Telugu')
 
-    inline_keyboard_buttons = [[english_button], [hindi_button], [kannada_button], [telugu_button]]
+    inline_keyboard_buttons = [[english_button], [hindi_button], [kannada_button]]
     reply_markup = InlineKeyboardMarkup(inline_keyboard_buttons)
 
     await bot.send_message(chat_id=update.effective_chat.id, text="Choose a Language:", reply_markup=reply_markup)

@@ -18,6 +18,7 @@ set_language - To choose language of your choice
 uuid_number = os.environ['uuid']
 
 bot = Bot(token=os.environ['token'])
+TELEGRAM_BOT_NAME=os.environ["botName"]
 try:
     from telegram import __version_info__
 except ImportError:
@@ -31,15 +32,36 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
     )
 
 # Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-logger = logging.getLogger(__name__)
+# Example of logging levels
+# logger.debug('debug message')
+# logger.info('info message')
+# logger.warning('warn message')
+# logger.error('error message')
+# logger.critical('critical message')
+
+logger = logging.getLogger(os.environ['botName'])
+
+logger.setLevel(logging.DEBUG)
+# create file handler which logs even debug messages
+fh = logging.FileHandler(TELEGRAM_BOT_NAME + '.log')
+fh.setLevel(logging.DEBUG)
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+fh.setFormatter(formatter)
+# add the handlers to logger
+logger.addHandler(ch)
+logger.addHandler(fh)
+
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
     user_name = update.message.chat.first_name
+    logger.info({"id": update.effective_chat.id,"username": user_name, "category": "logged_in", "label": "logged_in"})
     tBotName = os.environ['botName']
     await bot.send_message(chat_id=update.effective_chat.id, text=f'Hi {user_name}, welcome to {tBotName} bot')
     await relay_handler(update, context)
@@ -92,10 +114,16 @@ async def language_handler(update: Update):
 async def preferred_language_callback(update: Update, context: CallbackContext):
     # setting engine manually
     context.user_data['engine'] = 'engine_langchain_gpt4'
+    logger.info({"id":update.effective_chat.id ,"username": update.effective_chat.first_name, "category": "engine_selection", "label": "engine_selection", "value": context.user_data['engine']})
     callback_query = update.callback_query
     preferred_language = callback_query.data.lstrip('lang_')
     context.user_data['language'] = preferred_language
-    await bot.send_message(chat_id=update.effective_chat.id, text=f'You have chosen {preferred_language}. \nGive your query now')
+    if os.environ.get('promptMsg'):
+        prompt_msg=os.environ.get('promptMsg')
+    else:
+        prompt_msg='Give your query now'
+    logger.info({"id":update.effective_chat.id ,"username": update.effective_chat.first_name, "category": "language_selection", "label": "engine_selection", "value": preferred_language})
+    await bot.send_message(chat_id=update.effective_chat.id, text=f'You have chosen {preferred_language}. \n{prompt_msg}')
     return query_handler
 
 
@@ -176,6 +204,7 @@ async def query_handler(update: Update, context: CallbackContext):
     if voice_message is not None:
         voice_file = await voice_message.get_file()
         voice_message_url = voice_file.file_path
+    logger.info({"id":update.effective_chat.id ,"username": update.effective_chat.first_name, "category": "query_handler", "label": "question", "value": query})
     await bot.send_message(chat_id=update.effective_chat.id, text=f'Just a few seconds...')
     await handle_query_response(update, query, voice_message_url, voice_message_language, engine)
     return query_handler
@@ -187,8 +216,14 @@ async def handle_query_response(update: Update, query: str, voice_message_url: s
     if "error" in response:
         await bot.send_message(chat_id=update.effective_chat.id,
                                text='An error has been encountered. Please try again.')
-        print(response)
+        info_msg = {"id":update.effective_chat.id ,"username": update.effective_chat.first_name, "category": "handle_query_response", "label": "question_sent", "value": query}
+        logger.info(info_msg)
+        merged = dict()
+        merged.update(info_msg)
+        merged.update(response)
+        logger.error(merged)
     else:
+        logger.info({"id":update.effective_chat.id ,"username": update.effective_chat.first_name, "category": "handle_query_response", "label": "answer_received", "value": query})
         answer = response['answer']
         await bot.send_message(chat_id=update.effective_chat.id, text=answer)
 

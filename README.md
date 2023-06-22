@@ -28,6 +28,7 @@ The Jugalbandi Telegram Bot is a Python-based bot that interacts with the Jugalb
    - token
    - botName
    - upstream
+   - promptMsg (optional)
 
 5. Start the Telegram bot
 

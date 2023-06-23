@@ -204,7 +204,7 @@ async def query_handler(update: Update, context: CallbackContext):
     if voice_message is not None:
         voice_file = await voice_message.get_file()
         voice_message_url = voice_file.file_path
-    logger.info({"id":update.effective_chat.id ,"username": update.effective_chat.first_name, "category": "query_handler", "label": "question", "value": query})
+    #logger.info({"id":update.effective_chat.id ,"username": update.effective_chat.first_name, "category": "query_handler", "label": "question", "value": query})
     # mergedQuery="fetch data in bullets format without new line characters for " + query + " with fields only content, type of content, language, source, links each as bullet point?"
     await bot.send_message(chat_id=update.effective_chat.id, text=f'Just a few seconds...')
 
